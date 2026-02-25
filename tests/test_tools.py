@@ -143,3 +143,25 @@ def test_save_conversation_state_action_merges_sections():
     stored = ctx.state[tools.LIBRARY_STATE_KEY]
     assert "card_request" in stored
     assert stored["event_request"]["event_type"] == "Book Club"
+
+
+def test_save_conversation_state_action_accepts_dict_payload():
+    ctx = SimpleNamespace(state=State(value={}, delta={}))
+    update_dict = {
+        "household_request": {
+            "primary_card_number": "CARD-42",
+            "new_member": {"name": "Gina Boulder"},
+        },
+        "last_confirmation_note": "Household updated.",
+    }
+
+    response = tools.save_conversation_state_action(update_dict, ctx)
+
+    stored = ctx.state[tools.LIBRARY_STATE_KEY]
+    assert stored["household_request"]["primary_card_number"] == "CARD-42"
+    assert stored["household_request"]["new_member"]["name"] == "Gina Boulder"
+    assert stored["last_confirmation_note"] == "Household updated."
+    assert set(response.applied_fields) == {
+        "household_request",
+        "last_confirmation_note",
+    }

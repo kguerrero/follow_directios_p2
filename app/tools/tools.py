@@ -244,6 +244,8 @@ def save_conversation_state_action(
     update: ConversationStateUpdate, tool_context: ToolContext
 ) -> ConversationStateResponse:
     """Persist patron-provided information to session state."""
+    if isinstance(update, dict):
+        update = ConversationStateUpdate(**update)
     stored_value = tool_context.state.get(LIBRARY_STATE_KEY, {}) or {}
     current = (
         ConversationState.model_validate(stored_value)
