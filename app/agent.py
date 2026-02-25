@@ -3,7 +3,10 @@ import os
 from google.adk import Agent
 from google.adk.models.lite_llm import LiteLlm
 
-from app.tools.requirements_helper import format_requirement_section
+from app.tools.requirements_helper import (
+    format_confirmation_prompt,
+    format_requirement_section,
+)
 from app.tools.tools import (
     BookRecommendationRequest,
     BookOrderRequest,
@@ -34,6 +37,17 @@ book_recommendation_root = format_requirement_section(
     heading_indent="   ",
     bullet_indent="     ",
 )
+book_recommendation_confirmation = format_confirmation_prompt(
+    BookRecommendationRequest,
+    heading="Before using `recommend_books`, confirm:",
+)
+book_recommendation_confirmation_root = format_confirmation_prompt(
+    BookRecommendationRequest,
+    heading="   Confirm recommendation details:",
+    bullet_indent="     ",
+    heading_indent="",
+    closing_line="   Require the patron to affirm before routing.",
+)
 
 book_order_collection = format_requirement_section(
     BookOrderRequest,
@@ -44,6 +58,17 @@ book_order_root = format_requirement_section(
     heading="- Book orders (BookOrderRequest):",
     heading_indent="   ",
     bullet_indent="     ",
+)
+book_order_confirmation = format_confirmation_prompt(
+    BookOrderRequest,
+    heading="Before using `order_book`, confirm:",
+)
+book_order_confirmation_root = format_confirmation_prompt(
+    BookOrderRequest,
+    heading="   Confirm book order details:",
+    bullet_indent="     ",
+    heading_indent="",
+    closing_line="   Require a clear yes before submitting an order.",
 )
 
 card_request_collection = format_requirement_section(
@@ -56,6 +81,17 @@ card_request_root = format_requirement_section(
     heading_indent="   ",
     bullet_indent="     ",
 )
+card_request_confirmation = format_confirmation_prompt(
+    CardRequest,
+    heading="Before using `issue_library_card`, confirm:",
+)
+card_request_confirmation_root = format_confirmation_prompt(
+    CardRequest,
+    heading="   Confirm new card details:",
+    bullet_indent="     ",
+    heading_indent="",
+    closing_line="   Ask for explicit confirmation before creating the card.",
+)
 
 household_request_collection = format_requirement_section(
     HouseholdAddRequest,
@@ -66,6 +102,17 @@ household_request_root = format_requirement_section(
     heading="- Household additions (HouseholdAddRequest):",
     heading_indent="   ",
     bullet_indent="     ",
+)
+household_request_confirmation = format_confirmation_prompt(
+    HouseholdAddRequest,
+    heading="Before using `add_household_member`, confirm:",
+)
+household_request_confirmation_root = format_confirmation_prompt(
+    HouseholdAddRequest,
+    heading="   Confirm household addition details:",
+    bullet_indent="     ",
+    heading_indent="",
+    closing_line="   Proceed only after approval from the patron.",
 )
 
 event_request_collection = format_requirement_section(
@@ -78,6 +125,17 @@ event_request_root = format_requirement_section(
     heading_indent="   ",
     bullet_indent="     ",
 )
+event_request_confirmation = format_confirmation_prompt(
+    EventRequest,
+    heading="Before using `request_library_event`, confirm:",
+)
+event_request_confirmation_root = format_confirmation_prompt(
+    EventRequest,
+    heading="   Confirm event details:",
+    bullet_indent="     ",
+    heading_indent="",
+    closing_line="   Wait for explicit confirmation before scheduling.",
+)
 
 root_requirement_sections = "\n".join(
     [
@@ -89,6 +147,16 @@ root_requirement_sections = "\n".join(
     ]
 )
 
+root_confirmation_sections = "\n".join(
+    [
+        book_recommendation_confirmation_root,
+        book_order_confirmation_root,
+        card_request_confirmation_root,
+        household_request_confirmation_root,
+        event_request_confirmation_root,
+    ]
+)
+
 
 book_matching_agent = Agent(
     name="book_recommendation_agent",
@@ -97,6 +165,7 @@ book_matching_agent = Agent(
     instruction=f"""
 Primary action: call `recommend_books` once per patron request.
 {book_recommendation_collection}
+{book_recommendation_confirmation}
 Map conversation data into the BookRecommendationRequest schema before invoking the tool.
 After receiving results, explain the suggestions, cite any follow-up actions (holds, waitlists), and invite feedback.
 """,
@@ -111,6 +180,7 @@ book_order_agent = Agent(
     instruction=f"""
 Use `order_book` to log a request for a specific title/format.
 {book_order_collection}
+{book_order_confirmation}
 Confirm availability expectations (could be hold or purchase) and share the request_id plus next notification steps.
 """,
     tools=[order_book],
@@ -124,6 +194,7 @@ card_services_agent = Agent(
     instruction=f"""
 Use `issue_library_card` whenever a patron needs a new card.
 {card_request_collection}
+{card_request_confirmation}
 Remind patrons that temporary PINs expire in 72 hours and explain pickup/verification requirements.
 """,
     tools=[issue_library_card],
@@ -137,6 +208,7 @@ household_link_agent = Agent(
     instruction=f"""
 Call `add_household_member` to attach someone to an existing library card.
 {household_request_collection}
+{household_request_confirmation}
 Confirm that the primary cardholder approves the addition and summarize any pending ID checks.
 """,
     tools=[add_household_member],
@@ -150,6 +222,7 @@ programming_agent = Agent(
     instruction=f"""
 Use `request_library_event` for book clubs, readings, study rooms, or community events.
 {event_request_collection}
+{event_request_confirmation}
 Return the tool's status and outline what follow-up the programming team will send.
 """,
     tools=[request_library_event],
@@ -171,7 +244,9 @@ Conversation workflow
 2. Clarify their objective. If vague, ask short follow-ups to determine whether they need: recommendations, a book order/hold, a new library card, a household add-on, or an event/program booking.
 3. Capture required data before transfer:
 {root_requirement_sections}
-4. Reflect the plan back to the patron and confirm accuracy.
+4. Read back the collected fields and obtain explicit approval:
+{root_confirmation_sections}
+   Do not proceed until the patron clearly confirms accuracy (yes/no).
 5. When ready, hand off to the matching sub-tools and provide a "Handoff Summary" with Customer goal, Key details, Urgency, and Missing info (if any). Ask if they have final questions before transferring.
 6. If no sub-tools applies or data is missing, continue assisting personally, explain why the request is paused, and propose next steps (e.g., gather a card number, escalate to staff).
 
