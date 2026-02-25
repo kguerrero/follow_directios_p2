@@ -1,9 +1,15 @@
 from datetime import datetime, timezone
+from types import SimpleNamespace
 
 import pytest
 
+from app import agent as agent_module
 from app.tools import tools
-from app.tools.requirements_helper import format_requirement_section
+from app.tools.requirements_helper import (
+    format_confirmation_prompt,
+    format_requirement_section,
+)
+from google.adk.sessions.state import State
 
 
 def _assert_iso8601_utc(timestamp: str) -> None:
@@ -43,6 +49,7 @@ def test_issue_card_action_sets_iso_expiry():
         tools.issue_library_card,
         tools.add_household_member,
         tools.request_library_event,
+        tools.save_conversation_state,
     ],
 )
 def test_function_tools_generate_declarations(tool_instance):
@@ -69,3 +76,70 @@ def test_requirement_section_lists_nested_collection_fields():
 
     assert "household_members (optional)" in text
     assert "household_members[].name" in text
+
+
+def test_confirmation_prompt_requires_explicit_yes():
+    text = format_confirmation_prompt(
+        tools.BookRecommendationRequest,
+        heading="Confirm BookRecommendationRequest:",
+    )
+
+    assert "Confirm BookRecommendationRequest:" in text
+    assert "Confirm patron.name (required)" in text
+    assert "explicit yes/no" in text
+
+
+def test_agent_instructions_embed_confirmation_blocks_and_state_tool():
+    assert (
+        "save_conversation_state" in agent_module.book_matching_agent.instruction
+    )
+    assert (
+        agent_module.book_recommendation_confirmation
+        in agent_module.book_matching_agent.instruction
+    )
+    assert (
+        agent_module.root_confirmation_sections
+        in agent_module.root_agent.instruction
+    )
+
+
+def test_save_conversation_state_action_updates_state():
+    ctx = SimpleNamespace(state=State(value={}, delta={}))
+    update = tools.ConversationStateUpdate(
+        recommendation=tools.BookRecommendationRequest(
+            patron=tools.PatronDetails(name="Lakshmi Ray"),
+            favorite_genres=["mystery"],
+            recent_reads=["In the Woods"],
+        ),
+        last_confirmation_note="Patron approved recommendations.",
+    )
+
+    response = tools.save_conversation_state_action(update, ctx)
+
+    stored = ctx.state[tools.LIBRARY_STATE_KEY]
+    assert stored["recommendation"]["patron"]["name"] == "Lakshmi Ray"
+    assert "recommendation" in response.applied_fields
+    assert stored["last_confirmation_note"] == "Patron approved recommendations."
+
+
+def test_save_conversation_state_action_merges_sections():
+    ctx = SimpleNamespace(state=State(value={}, delta={}))
+    first = tools.ConversationStateUpdate(
+        card_request=tools.CardRequest(
+            patron=tools.PatronDetails(name="Dev"),
+            household_members=[],
+        )
+    )
+    tools.save_conversation_state_action(first, ctx)
+
+    second = tools.ConversationStateUpdate(
+        event_request=tools.EventRequest(
+            patron=tools.PatronDetails(name="Dev"),
+            event_type="Book Club",
+        )
+    )
+    tools.save_conversation_state_action(second, ctx)
+
+    stored = ctx.state[tools.LIBRARY_STATE_KEY]
+    assert "card_request" in stored
+    assert stored["event_request"]["event_type"] == "Book Club"
