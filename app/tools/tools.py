@@ -6,7 +6,9 @@ from typing import Literal, Optional
 
 from pydantic import BaseModel, Field
 
+from google.adk.sessions.state import State
 from google.adk.tools import FunctionTool
+from google.adk.tools.tool_context import ToolContext
 
 
 class PatronDetails(BaseModel):
@@ -126,6 +128,55 @@ class HouseholdAddResponse(BaseModel):
     status: Literal["pending", "added"]
 
 
+class ConversationState(BaseModel):
+    """Stateful snapshot of patron-provided info."""
+
+    recommendation: Optional[BookRecommendationRequest] = None
+    book_order: Optional[BookOrderRequest] = None
+    card_request: Optional[CardRequest] = None
+    household_request: Optional[HouseholdAddRequest] = None
+    event_request: Optional[EventRequest] = None
+    last_confirmation_note: Optional[str] = Field(
+        default=None,
+        description="Summary of the last explicit confirmation from the patron",
+    )
+
+
+class ConversationStateUpdate(BaseModel):
+    """Fields to upsert/clear in the conversation state."""
+
+    recommendation: Optional[BookRecommendationRequest] = Field(
+        default=None, description="Updated recommendation inputs"
+    )
+    book_order: Optional[BookOrderRequest] = Field(
+        default=None, description="Updated book order inputs"
+    )
+    card_request: Optional[CardRequest] = Field(
+        default=None, description="Updated card service inputs"
+    )
+    household_request: Optional[HouseholdAddRequest] = Field(
+        default=None, description="Updated household linking inputs"
+    )
+    event_request: Optional[EventRequest] = Field(
+        default=None, description="Updated programming/event inputs"
+    )
+    last_confirmation_note: Optional[str] = Field(
+        default=None,
+        description="Plain-language recap of what the patron approved",
+    )
+
+
+class ConversationStateResponse(BaseModel):
+    state: ConversationState
+    applied_fields: list[str] = Field(
+        default_factory=list,
+        description="State sections touched by this update",
+    )
+
+
+LIBRARY_STATE_KEY = f"{State.APP_PREFIX}library_conversation_state"
+
+
 # Mock implementations -----------------------------------------------------
 
 
@@ -189,9 +240,35 @@ def request_event_action(request: EventRequest) -> EventResponse:
     )
 
 
+def save_conversation_state_action(
+    update: ConversationStateUpdate, tool_context: ToolContext
+) -> ConversationStateResponse:
+    """Persist patron-provided information to session state."""
+    if isinstance(update, dict):
+        update = ConversationStateUpdate(**update)
+    stored_value = tool_context.state.get(LIBRARY_STATE_KEY, {}) or {}
+    current = (
+        ConversationState.model_validate(stored_value)
+        if stored_value
+        else ConversationState()
+    )
+    update_data = {
+        field: getattr(update, field)
+        for field in update.model_fields_set
+    }
+    if not update_data:
+        return ConversationStateResponse(state=current, applied_fields=[])
+    merged = current.model_copy(update=update_data, deep=True)
+    tool_context.state[LIBRARY_STATE_KEY] = merged.model_dump(exclude_none=True)
+    return ConversationStateResponse(
+        state=merged, applied_fields=list(update_data.keys())
+    )
+
+
 # Tools exposed to agents --------------------------------------------------
 recommend_books = FunctionTool(recommend_books_action)
 order_book = FunctionTool(order_book_action)
 issue_library_card = FunctionTool(issue_card_action)
 add_household_member = FunctionTool(add_household_member_action)
 request_library_event = FunctionTool(request_event_action)
+save_conversation_state = FunctionTool(save_conversation_state_action)
