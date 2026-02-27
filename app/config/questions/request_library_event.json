@@ -1,0 +1,74 @@
+{
+  "collection": {
+    "default_heading": "Collect details to populate EventRequest:",
+    "questions": [
+      {
+        "id": "patron.name",
+        "prompt": "Who's making the event request?",
+        "required": true,
+        "validation": "non-empty string"
+      },
+      {
+        "id": "patron.contact_email",
+        "prompt": "Email for programming follow-ups?",
+        "required": false,
+        "validation": "email address"
+      },
+      {
+        "id": "event_type",
+        "prompt": "What type of event or space is needed?",
+        "required": true,
+        "validation": "non-empty string"
+      },
+      {
+        "id": "desired_date",
+        "prompt": "Preferred date/time (ISO 8601 or weekday/time range).",
+        "required": false,
+        "validation": "ISO 8601 date or freeform window"
+      },
+      {
+        "id": "attendees",
+        "prompt": "Roughly how many attendees do you expect?",
+        "required": false,
+        "validation": "integer >=1"
+      },
+      {
+        "id": "special_requirements",
+        "prompt": "Any AV, accessibility, or setup needs?",
+        "required": false,
+        "validation": "short description"
+      }
+    ]
+  },
+  "confirmation": {
+    "default_heading": "Before using `request_library_event`, confirm:",
+    "items": [
+      {
+        "id": "event_type",
+        "required": true,
+        "prompt": "Restate the event type and desired outcome."
+      },
+      {
+        "id": "desired_date",
+        "required": false,
+        "prompt": "Summarize the requested schedule or window."
+      },
+      {
+        "id": "attendees",
+        "required": false,
+        "prompt": "Confirm expected attendance so programming can size the room."
+      },
+      {
+        "id": "special_requirements",
+        "required": false,
+        "prompt": "List any special needs captured."
+      },
+      {
+        "id": "consent",
+        "required": true,
+        "prompt": "Explain next steps and ask for approval to forward to programming."
+      }
+    ],
+    "default_closing_line": "Get a clear go/no-go before notifying programming."
+  }
+}

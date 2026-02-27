@@ -1,0 +1,64 @@
+{
+  "collection": {
+    "default_heading": "Collect details to populate HouseholdAddRequest:",
+    "questions": [
+      {
+        "id": "primary_card_number",
+        "prompt": "Primary card number to attach the new member to?",
+        "required": true,
+        "validation": "non-empty string"
+      },
+      {
+        "id": "new_member.name",
+        "prompt": "New member's full name?",
+        "required": true,
+        "validation": "non-empty string"
+      },
+      {
+        "id": "new_member.card_number",
+        "prompt": "Do they already have a temporary or youth card number?",
+        "required": false,
+        "validation": "alphanumeric"
+      },
+      {
+        "id": "new_member.contact_email",
+        "prompt": "Email for the new member (if applicable).",
+        "required": false,
+        "validation": "email address"
+      },
+      {
+        "id": "relationship",
+        "prompt": "Relationship to the primary cardholder?",
+        "required": false,
+        "validation": "relationship note",
+        "notes": "Examples: parent, guardian, partner."
+      }
+    ]
+  },
+  "confirmation": {
+    "default_heading": "Before using `add_household_member`, confirm:",
+    "items": [
+      {
+        "id": "primary_card_number",
+        "required": true,
+        "prompt": "Echo the primary card number (omit the middle digits)."
+      },
+      {
+        "id": "new_member.name",
+        "required": true,
+        "prompt": "Read back the new member's name."
+      },
+      {
+        "id": "relationship",
+        "required": false,
+        "prompt": "Confirm the relationship if it was provided."
+      },
+      {
+        "id": "consent",
+        "required": true,
+        "prompt": "Ask the primary cardholder (or proxy) to approve the addition."
+      }
+    ],
+    "default_closing_line": "Confirm the primary cardholder authorizes the change."
+  }
+}
