@@ -1,0 +1,54 @@
+{
+  "collection": {
+    "default_heading": "Collect details to populate BookRecommendationRequest:",
+    "questions": [
+      {
+        "id": "patron.name",
+        "prompt": "What's the patron's full name?",
+        "required": true,
+        "validation": "non-empty string",
+        "notes": "Needed to link recommendations to their account."
+      },
+      {
+        "id": "favorite_genres",
+        "prompt": "Any favorite genres or authors we should focus on?",
+        "required": false,
+        "validation": "list of genres",
+        "notes": "Use to personalize the top picks."
+      },
+      {
+        "id": "mood",
+        "prompt": "Is there a particular mood or theme for this reading list?",
+        "required": false,
+        "validation": "short description"
+      },
+      {
+        "id": "recent_reads",
+        "prompt": "What recent titles did they enjoy (if any)?",
+        "required": false,
+        "validation": "list of titles"
+      }
+    ]
+  },
+  "confirmation": {
+    "default_heading": "Before using `recommend_books`, confirm:",
+    "items": [
+      {
+        "id": "patron.name",
+        "required": true,
+        "prompt": "Spell back the name to ensure we're updating the right record."
+      },
+      {
+        "id": "favorite_genres",
+        "required": false,
+        "prompt": "Summarize the genres, moods, or recent reads captured."
+      },
+      {
+        "id": "consent",
+        "required": true,
+        "prompt": "Explain the plan and ask for an explicit yes to send the recommendations."
+      }
+    ],
+    "default_closing_line": "Require an explicit yes before routing."
+  }
+}

@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 from datetime import datetime, timedelta, timezone
-from typing import Literal, Optional
+from typing import Any, Literal, Optional
 
 from pydantic import BaseModel, Field
 
@@ -191,6 +191,8 @@ def _utc_iso(dt: datetime) -> str:
 
 def recommend_books_action(request: BookRecommendationRequest) -> BookRecommendationResponse:
     """Return a mock book recommendation list."""
+    if isinstance(request, dict):
+        request = BookRecommendationRequest(**request)
     fallback_titles = [
         "The Midnight Library",
         "Project Hail Mary",
@@ -206,6 +208,8 @@ def recommend_books_action(request: BookRecommendationRequest) -> BookRecommenda
 
 def order_book_action(request: BookOrderRequest) -> BookOrderResponse:
     """Mock placing a book order."""
+    if isinstance(request, dict):
+        request = BookOrderRequest(**request)
     return BookOrderResponse(
         request_id=f"ORD-{datetime.now(timezone.utc).strftime('%Y%m%d%H%M%S')}",
         status="requested",
@@ -214,6 +218,8 @@ def order_book_action(request: BookOrderRequest) -> BookOrderResponse:
 
 def issue_card_action(request: CardRequest) -> CardResponse:
     """Mock issuing a new card (primary plus optional household)."""
+    if isinstance(request, dict):
+        request = CardRequest(**request)
     now = datetime.now(timezone.utc)
     return CardResponse(
         card_number=f"CARD-{now.strftime('%H%M%S')}",
@@ -226,6 +232,8 @@ def add_household_member_action(
     request: HouseholdAddRequest,
 ) -> HouseholdAddResponse:
     """Mock adding a person to an existing library card."""
+    if isinstance(request, dict):
+        request = HouseholdAddRequest(**request)
     return HouseholdAddResponse(
         confirmation_id=f"HH-{datetime.now(timezone.utc).strftime('%Y%m%d%H%M')}",
         status="added",
@@ -234,34 +242,68 @@ def add_household_member_action(
 
 def request_event_action(request: EventRequest) -> EventResponse:
     """Mock logging an event request."""
+    if isinstance(request, dict):
+        request = EventRequest(**request)
     return EventResponse(
         event_request_id=f"EVT-{datetime.now(timezone.utc).strftime('%Y%m%d')}",
         status="received",
     )
 
 
+def _merge_values(base_value, update_value):
+    if update_value is None:
+        return None
+    if isinstance(base_value, BaseModel):
+        base_value = base_value.model_dump(exclude_none=False)
+    if isinstance(update_value, BaseModel):
+        update_value = update_value.model_dump(exclude_none=True)
+    if isinstance(base_value, dict) and isinstance(update_value, dict):
+        merged = dict(base_value)
+        for key, value in update_value.items():
+            merged[key] = _merge_values(merged.get(key), value)
+        return merged
+    return update_value
+
+
+def _normalize_update_payload(update: ConversationStateUpdate | dict[str, Any]) -> dict[str, Any]:
+    if isinstance(update, ConversationStateUpdate):
+        return update.model_dump(exclude_none=True)
+    normalized: dict[str, Any] = {}
+    allowed_fields = set(ConversationStateUpdate.model_fields)
+    for key, value in update.items():
+        if key in allowed_fields:
+            normalized[key] = value
+    return normalized
+
+
 def save_conversation_state_action(
     update: ConversationStateUpdate, tool_context: ToolContext
 ) -> ConversationStateResponse:
     """Persist patron-provided information to session state."""
-    if isinstance(update, dict):
-        update = ConversationStateUpdate(**update)
+    update_dict = _normalize_update_payload(update)
+    if not update_dict:
+        stored_value = tool_context.state.get(LIBRARY_STATE_KEY, {}) or {}
+        current = (
+            ConversationState.model_validate(stored_value)
+            if stored_value
+            else ConversationState()
+        )
+        return ConversationStateResponse(state=current, applied_fields=[])
+
     stored_value = tool_context.state.get(LIBRARY_STATE_KEY, {}) or {}
-    current = (
+    current_state = (
         ConversationState.model_validate(stored_value)
         if stored_value
         else ConversationState()
     )
-    update_data = {
-        field: getattr(update, field)
-        for field in update.model_fields_set
-    }
-    if not update_data:
-        return ConversationStateResponse(state=current, applied_fields=[])
-    merged = current.model_copy(update=update_data, deep=True)
-    tool_context.state[LIBRARY_STATE_KEY] = merged.model_dump(exclude_none=True)
+    merged_payload = current_state.model_dump(exclude_none=False)
+    for field, value in update_dict.items():
+        merged_payload[field] = _merge_values(merged_payload.get(field), value)
+
+    merged_state = ConversationState.model_validate(merged_payload)
+    tool_context.state[LIBRARY_STATE_KEY] = merged_state.model_dump(exclude_none=True)
     return ConversationStateResponse(
-        state=merged, applied_fields=list(update_data.keys())
+        state=merged_state, applied_fields=list(update_dict.keys())
     )
 
 

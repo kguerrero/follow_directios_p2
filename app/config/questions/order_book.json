@@ -1,0 +1,135 @@
+{
+  "collection": {
+    "default_heading": "Collect details to populate BookOrderRequest:",
+    "questions": [
+      {
+        "id": "patron.name",
+        "prompt": "Who is requesting the book? (Full name)",
+        "required": true,
+        "validation": "non-empty string"
+      },
+      {
+        "id": "patron.card_number",
+        "prompt": "Do they have an existing library card number?",
+        "required": false,
+        "validation": "numeric or alphanumeric card id"
+      },
+      {
+        "id": "patron.contact_email",
+        "prompt": "Where should we email pickup or shipping updates?",
+        "required": false,
+        "validation": "email address"
+      },
+      {
+        "id": "title",
+        "prompt": "Which title are we ordering?",
+        "required": true,
+        "validation": "non-empty string"
+      },
+      {
+        "id": "author",
+        "prompt": "Do they know the author?",
+        "required": false,
+        "validation": "non-empty string"
+      },
+      {
+        "id": "format",
+        "prompt": "Preferred format (hardcover, paperback, ebook, audiobook)?",
+        "required": true,
+        "validation": "one of hardcover|paperback|ebook|audiobook"
+      },
+      {
+        "id": "shipping_address.street_line1",
+        "prompt": "Street line 1 for shipping or pickup confirmation.",
+        "required": true,
+        "validation": "non-empty string"
+      },
+      {
+        "id": "shipping_address.city",
+        "prompt": "City for the delivery/pickup location.",
+        "required": true,
+        "validation": "city name"
+      },
+      {
+        "id": "shipping_address.state_or_province",
+        "prompt": "State or province?",
+        "required": true,
+        "validation": "state abbreviation"
+      },
+      {
+        "id": "shipping_address.postal_code",
+        "prompt": "ZIP or postal code?",
+        "required": true,
+        "validation": "ZIP or postal code"
+      },
+      {
+        "id": "shipping_address.country",
+        "prompt": "Country (default USA).",
+        "required": false,
+        "validation": "country name"
+      },
+      {
+        "id": "preferred_vendor",
+        "prompt": "Which vendor should we source the title from?",
+        "required": true,
+        "validation": "vendor name",
+        "notes": "Required if patrons want a specific supplier."
+      },
+      {
+        "id": "preferred_vendor_address.city",
+        "prompt": "City for the preferred vendor location.",
+        "required": true,
+        "validation": "city name"
+      },
+      {
+        "id": "preferred_vendor_address.state_or_province",
+        "prompt": "Vendor state/province.",
+        "required": true,
+        "validation": "state abbreviation"
+      },
+      {
+        "id": "preferred_vendor_address.postal_code",
+        "prompt": "Vendor postal code.",
+        "required": true,
+        "validation": "ZIP or postal code"
+      },
+      {
+        "id": "needed_by",
+        "prompt": "Is there a deadline for getting the book?",
+        "required": false,
+        "validation": "ISO 8601 date"
+      }
+    ]
+  },
+  "confirmation": {
+    "default_heading": "Before using `order_book`, confirm:",
+    "items": [
+      {
+        "id": "title",
+        "required": true,
+        "prompt": "Restate the title, author (if provided), and chosen format."
+      },
+      {
+        "id": "shipping_address",
+        "required": true,
+        "prompt": "Read back the pickup/shipping details, redacting sensitive parts."
+      },
+      {
+        "id": "preferred_vendor",
+        "required": true,
+        "prompt": "Confirm the vendor preference and any sourcing constraints."
+      },
+      {
+        "id": "needed_by",
+        "required": false,
+        "prompt": "Clarify the timeline so expectations are clear."
+      },
+      {
+        "id": "consent",
+        "required": true,
+        "prompt": "Explain the request will be logged and ask for explicit approval."
+      }
+    ],
+    "default_closing_line": "Require a clear yes before submitting."
+  }
+}

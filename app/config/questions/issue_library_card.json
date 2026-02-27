@@ -1,0 +1,64 @@
+{
+  "collection": {
+    "default_heading": "Collect details to populate CardRequest:",
+    "questions": [
+      {
+        "id": "patron.name",
+        "prompt": "Full legal name for the primary cardholder?",
+        "required": true,
+        "validation": "non-empty string"
+      },
+      {
+        "id": "patron.contact_email",
+        "prompt": "Preferred email for account notices?",
+        "required": false,
+        "validation": "email address"
+      },
+      {
+        "id": "patron.card_number",
+        "prompt": "Do they have an existing card number (for upgrades or replacements)?",
+        "required": false,
+        "validation": "alphanumeric"
+      },
+      {
+        "id": "household_members[].name",
+        "prompt": "List any household members to add (name per person).",
+        "required": false,
+        "validation": "non-empty string",
+        "notes": "Repeat for each additional reader, if any."
+      },
+      {
+        "id": "household_members[].contact_email",
+        "prompt": "Email for each additional reader (if different).",
+        "required": false,
+        "validation": "email address"
+      }
+    ]
+  },
+  "confirmation": {
+    "default_heading": "Before using `issue_library_card`, confirm:",
+    "items": [
+      {
+        "id": "patron.name",
+        "required": true,
+        "prompt": "Spell back the primary cardholder's name."
+      },
+      {
+        "id": "patron.contact_email",
+        "required": false,
+        "prompt": "Verify the contact email or capture an alternative channel."
+      },
+      {
+        "id": "household_members",
+        "required": false,
+        "prompt": "Recap the household additions or note that there are none."
+      },
+      {
+        "id": "consent",
+        "required": true,
+        "prompt": "Explain ID verification requirements and seek approval to issue the card(s)."
+      }
+    ],
+    "default_closing_line": "Remind them about pickup verification and temporary PIN expiry."
+  }
+}

@@ -126,24 +126,3 @@ def format_requirement_section(
         )
     return "\n".join(formatted)
 
-
-def format_confirmation_prompt(
-    model: type[BaseModel],
-    *,
-    heading: str | None = None,
-    heading_indent: str = "",
-    bullet_indent: str = "",
-    closing_line: str | None = "Ask for an explicit yes/no before continuing.",
-) -> str:
-    """Format confirmation instructions derived from a model schema."""
-    lines = list(iter_model_requirements(model))
-    formatted: list[str] = []
-    if heading:
-        formatted.append(f"{heading_indent}{heading}")
-    for line in lines:
-        formatted.append(
-            f"{bullet_indent}- Confirm {line.path} ({line.requirement_label}): {line.description}"
-        )
-    if closing_line:
-        formatted.append(f"{heading_indent}{closing_line}")
-    return "\n".join(formatted)
