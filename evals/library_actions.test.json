@@ -1,0 +1,313 @@
+{
+  "eval_set_id": "citystack_library_subagents",
+  "name": "Library concierge action coverage",
+  "description": "Sample evals that exercise each service-specific subagent.",
+  "eval_cases": [
+    {
+      "eval_id": "recommend_books_happy_path",
+      "conversation": [
+        {
+          "invocation_id": "rec-001",
+          "user_content": {
+            "role": "user",
+            "parts": [
+              {
+                "text": "I love cozy mysteries and want something comforting to read."
+              }
+            ]
+          },
+          "final_response": {
+            "role": "model",
+            "parts": [
+              {
+                "text": "Here are a few cozy mystery picks and what we logged for the recommendation request."
+              }
+            ]
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "name": "recommend_books",
+                "args": {
+                  "patron": {
+                    "name": "Alyssa",
+                    "contact_email": "alyssa@example.com"
+                  },
+                  "favorite_genres": [
+                    "mystery"
+                  ],
+                  "recent_reads": [
+                    "The Thursday Murder Club"
+                  ]
+                }
+              }
+            ],
+            "intermediate_responses": [
+              [
+                "library_root_agent",
+                [
+                  {
+                    "text": "I'll route you to our reading concierge to collect preference details."
+                  }
+                ]
+              ],
+              [
+                "book_recommendation_agent",
+                [
+                  {
+                    "text": "Thanks for sharing the genres and recent reads—I'll send 3 picks your way."
+                  }
+                ]
+              ]
+            ]
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "library_concierge",
+        "user_id": "eval_user",
+        "state": {}
+      }
+    },
+    {
+      "eval_id": "book_order_vendor_request",
+      "conversation": [
+        {
+          "invocation_id": "order-002",
+          "user_content": {
+            "role": "user",
+            "parts": [
+              {
+                "text": "Please order a hardcover copy of Fourth Wing from Local Books."
+              }
+            ]
+          },
+          "final_response": {
+            "role": "model",
+            "parts": [
+              {
+                "text": "Your book order request has been logged with Local Books and we'll email updates."
+              }
+            ]
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "name": "order_book",
+                "args": {
+                  "patron": {
+                    "name": "DeShawn",
+                    "card_number": "CARD-1001",
+                    "contact_email": "deshawn@example.com"
+                  },
+                  "title": "Fourth Wing",
+                  "format": "hardcover",
+                  "shipping_address": {
+                    "street_line1": "10 Library Way",
+                    "city": "Stack City",
+                    "state_or_province": "CA",
+                    "postal_code": "94016",
+                    "country": "USA"
+                  },
+                  "preferred_vendor": "Local Books",
+                  "preferred_vendor_address": {
+                    "street_line1": "55 Market St",
+                    "city": "Stack City",
+                    "state_or_province": "CA",
+                    "postal_code": "94016",
+                    "country": "USA"
+                  }
+                }
+              }
+            ],
+            "intermediate_responses": [
+              [
+                "book_order_agent",
+                [
+                  {
+                    "text": "I'll confirm the vendor preference and submit the hold/purchase request."
+                  }
+                ]
+              ]
+            ]
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "library_concierge",
+        "user_id": "eval_user",
+        "state": {}
+      }
+    },
+    {
+      "eval_id": "card_request_with_household",
+      "conversation": [
+        {
+          "invocation_id": "card-003",
+          "user_content": {
+            "role": "user",
+            "parts": [
+              {
+                "text": "I need a new family card for the Jackson household."
+              }
+            ]
+          },
+          "final_response": {
+            "role": "model",
+            "parts": [
+              {
+                "text": "Enrollment submitted. Pick up the physical cards within 72 hours using the emailed PIN."
+              }
+            ]
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "name": "issue_library_card",
+                "args": {
+                  "patron": {
+                    "name": "Robin Jackson",
+                    "contact_email": "robin@example.com"
+                  },
+                  "household_members": [
+                    {
+                      "name": "Kai Jackson"
+                    },
+                    {
+                      "name": "Izzy Jackson"
+                    }
+                  ]
+                }
+              }
+            ],
+            "intermediate_responses": [
+              [
+                "card_services_agent",
+                [
+                  {
+                    "text": "I'll capture each household member before issuing the card package."
+                  }
+                ]
+              ]
+            ]
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "library_concierge",
+        "user_id": "eval_user",
+        "state": {}
+      }
+    },
+    {
+      "eval_id": "household_add_authorization",
+      "conversation": [
+        {
+          "invocation_id": "hh-004",
+          "user_content": {
+            "role": "user",
+            "parts": [
+              {
+                "text": "Add my sister Jo to card CARD-2222."
+              }
+            ]
+          },
+          "final_response": {
+            "role": "model",
+            "parts": [
+              {
+                "text": "Jo has been linked to CARD-2222 pending ID verification."
+              }
+            ]
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "name": "add_household_member",
+                "args": {
+                  "primary_card_number": "CARD-2222",
+                  "new_member": {
+                    "name": "Jo",
+                    "contact_email": "jo@example.com"
+                  },
+                  "relationship": "sibling"
+                }
+              }
+            ],
+            "intermediate_responses": [
+              [
+                "household_link_agent",
+                [
+                  {
+                    "text": "I'll confirm the primary cardholder authorization before saving the update."
+                  }
+                ]
+              ]
+            ]
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "library_concierge",
+        "user_id": "eval_user",
+        "state": {}
+      }
+    },
+    {
+      "eval_id": "event_request_study_room",
+      "conversation": [
+        {
+          "invocation_id": "event-005",
+          "user_content": {
+            "role": "user",
+            "parts": [
+              {
+                "text": "Reserve a study room for four on March 12th."
+              }
+            ]
+          },
+          "final_response": {
+            "role": "model",
+            "parts": [
+              {
+                "text": "Programming logged the study room request for March 12 and will confirm availability by email."
+              }
+            ]
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "name": "request_library_event",
+                "args": {
+                  "patron": {
+                    "name": "Nadia",
+                    "contact_email": "nadia@example.com"
+                  },
+                  "event_type": "study room",
+                  "desired_date": "2026-03-12T15:00:00Z",
+                  "attendees": 4,
+                  "special_requirements": "quiet space"
+                }
+              }
+            ],
+            "intermediate_responses": [
+              [
+                "events_agent",
+                [
+                  {
+                    "text": "I'll capture the headcount and target date before notifying programming."
+                  }
+                ]
+              ]
+            ]
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "library_concierge",
+        "user_id": "eval_user",
+        "state": {}
+      }
+    }
+  ]
+}

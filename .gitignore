@@ -1,2 +1,4 @@
 .adk
 .env
+__pycache__/
+.idea/

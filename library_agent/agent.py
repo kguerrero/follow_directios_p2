@@ -3,15 +3,15 @@ import os
 from google.adk import Agent
 from google.adk.models.lite_llm import LiteLlm
 
-from app.subagents import (
+from library_agent.subagents import (
     book_order,
     book_recommendation,
     card_services,
     household_link,
     programming,
 )
-from app.tools.requirements_helper import format_requirement_section
-from app.tools.tools import (
+from library_agent.tools.requirements_helper import format_requirement_section
+from library_agent.tools.tools import (
     ConversationStateUpdate,
     LIBRARY_STATE_KEY,
     save_conversation_state,

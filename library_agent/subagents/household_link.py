@@ -1,11 +1,11 @@
 """Household link agent configuration."""
 from google.adk import Agent
 
-from app.tools.question_bank import (
+from library_agent.tools.question_bank import (
     format_confirmation_checklist,
     format_question_collection,
 )
-from app.tools.tools import add_household_member, save_conversation_state
+from library_agent.tools.tools import add_household_member, save_conversation_state
 
 COLLECTION_SECTION = format_question_collection(
     "add_household_member",

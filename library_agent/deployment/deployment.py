@@ -26,7 +26,7 @@
 #
 #
 #
-# app = AdkApp(
+# library_agent = AdkApp(
 #     agent=root_agent,
 #     enable_tracing=True,
 # )
@@ -34,7 +34,7 @@
 # logging.debug("deploying tools to tools engine:")
 #
 # remote_app = agent_engines.create(
-#     app,
+#     library_agent,
 #     display_name="city_library_agent",
 #     requirements=[
 #         "google-cloud-aiplatform[adk,tools-engines]>=1.100.0,<2.0.0",
@@ -43,6 +43,6 @@
 #         "google-cloud-secret-manager",
 #     ],
 #     extra_packages=[
-#         "./app",
+#         "./library_agent",
 #     ],
 # )

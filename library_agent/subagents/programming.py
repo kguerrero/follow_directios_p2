@@ -1,11 +1,11 @@
 """Programming/event request agent configuration."""
 from google.adk import Agent
 
-from app.tools.question_bank import (
+from library_agent.tools.question_bank import (
     format_confirmation_checklist,
     format_question_collection,
 )
-from app.tools.tools import request_library_event, save_conversation_state
+from library_agent.tools.tools import request_library_event, save_conversation_state
 
 COLLECTION_SECTION = format_question_collection(
     "request_library_event",

@@ -3,10 +3,10 @@ from types import SimpleNamespace
 
 import pytest
 
-from app import agent as agent_module
-from app.tools import tools
-from app.tools.requirements_helper import format_requirement_section
-from app.tools.question_bank import (
+from library_agent import agent as agent_module
+from library_agent.tools import tools
+from library_agent.tools.requirements_helper import format_requirement_section
+from library_agent.tools.question_bank import (
     format_confirmation_checklist,
     format_question_collection,
 )
